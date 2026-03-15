@@ -15,12 +15,6 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Sub-tabs */
-        .sub-tab-btn { border-bottom: 2px solid transparent; }
-        .sub-tab-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 600; background-color: #eff6ff; }
-        .sub-tab-content { display: none; }
-        .sub-tab-content.active { display: block; animation: fadeIn 0.3s; }
-
         /* Accordion */
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .accordion-button.active .icon { transform: rotate(180deg); }
@@ -33,6 +27,17 @@
         .flashcard-front { background-color: #ffffff; border-top: 4px solid #3b82f6; justify-content: center; align-items: center; text-align: center; }
         .flashcard-back { background-color: #eff6ff; transform: rotateY(180deg); border-top: 4px solid #1d4ed8; overflow-y: auto; text-align: left; }
 
+        /* Vertical Timeline */
+        .timeline-container { position: relative; border-left: 2px solid #cbd5e1; margin-left: 1.5rem; padding-left: 2rem; }
+        .timeline-node { position: absolute; left: -0.6rem; top: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 0 2px #3b82f6; background-color: #3b82f6; }
+        
+        /* Drag and Drop */
+        .draggable { cursor: grab; transition: transform 0.1s; }
+        .draggable:active { cursor: grabbing; transform: scale(0.98); }
+        .draggable.dragging { opacity: 0.5; border: 2px dashed #94a3b8; }
+        .dropzone { transition: background-color 0.2s, border-color 0.2s; }
+        .dropzone.drag-over { background-color: #f1f5f9; border-color: #3b82f6; }
+
         /* Utility */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -41,7 +46,7 @@
 <body class="text-slate-800 h-screen flex overflow-hidden selection:bg-blue-200">
 
     <!-- Sidebar Navigation -->
-    <nav class="w-64 bg-slate-900 text-white flex flex-col h-full shrink-0 shadow-2xl z-20">
+    <nav class="w-72 bg-slate-900 text-white flex flex-col h-full shrink-0 shadow-2xl z-20">
         <div class="p-6 flex items-center gap-3 border-b border-slate-800 bg-slate-950">
             <div class="bg-blue-600 p-2 rounded-lg shrink-0 shadow-inner">
                 <i class="fa-solid fa-map-location-dot text-xl"></i>
@@ -51,31 +56,47 @@
                 <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">New Curriculum Pilot</p>
             </div>
         </div>
-        <div class="flex-1 py-6 px-4 space-y-2 overflow-y-auto hide-scrollbar">
-            <button class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-lg bg-blue-600 text-white transition-all duration-200 text-left shadow-md" data-target="analysis">
-                <i class="fa-solid fa-sitemap w-5 text-center"></i>
-                <span class="font-medium text-sm">Curriculum Architecture</span>
-            </button>
-            <button class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="sequencing">
-                <i class="fa-solid fa-layer-group w-5 text-center"></i>
-                <span class="font-medium text-sm">Unit Sequencing Options</span>
-            </button>
-            <button class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="reporting">
-                <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
-                <span class="font-medium text-sm">Reporting Categories</span>
-            </button>
-            <button class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="transfer">
-                <i class="fa-solid fa-bullseye w-5 text-center"></i>
-                <span class="font-medium text-sm">Learning Transfer</span>
-            </button>
+        <div class="flex-1 py-6 space-y-1 overflow-y-auto hide-scrollbar">
+            
+            <div class="px-4 mb-2">
+                <button class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-600 text-white transition-all duration-200 text-left shadow-md" data-target="analysis">
+                    <i class="fa-solid fa-sitemap w-5 text-center"></i>
+                    <span class="font-medium text-sm">Curriculum Architecture</span>
+                </button>
+            </div>
+
+            <!-- Sequencing Parent -->
+            <div class="px-4 mt-4">
+                <button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="sequencing-overview">
+                    <i class="fa-solid fa-layer-group w-5 text-center"></i>
+                    <span class="font-medium text-sm leading-tight">Unit Sequencing Examples | Overview</span>
+                </button>
+            </div>
+            
+            <!-- Sequencing Sub-pages -->
+            <div class="pl-11 pr-4 py-1 space-y-1 bg-slate-900 border-l-2 border-slate-700 ml-8 mr-4 mt-1">
+                <button class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="seq-chrono">
+                    <i class="fa-solid fa-timeline text-xs"></i>
+                    <span class="text-sm">Chronological</span>
+                </button>
+                <button class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="seq-thematic">
+                    <i class="fa-solid fa-object-group text-xs"></i>
+                    <span class="text-sm">Thematic Clustering</span>
+                </button>
+                <button class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 text-left" data-target="seq-inquiry">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    <span class="text-sm">Inquiry Modules</span>
+                </button>
+            </div>
+
         </div>
         <div class="p-6 border-t border-slate-800 bg-slate-950">
-            <p class="text-xs text-slate-500 text-center font-medium">Guide Dashboard v6.0</p>
+            <p class="text-xs text-slate-500 text-center font-medium">Guide Dashboard v7.0</p>
         </div>
     </nav>
 
     <!-- Main Content Area -->
-    <main class="flex-1 h-full overflow-x-hidden overflow-y-auto relative bg-slate-50">
+    <main class="flex-1 h-full overflow-x-hidden overflow-y-auto relative bg-slate-50 scroll-smooth" id="main-scroll">
         
         <!-- Tab 1: Curriculum Analysis -->
         <section id="analysis" class="tab-content active p-6 md:p-10 max-w-7xl mx-auto w-full">
@@ -148,698 +169,486 @@
                 <p class="text-sm text-slate-600 mb-6 max-w-4xl leading-relaxed">The Guiding Framework mandates that Knowledge, Understanding, and Skills work together. Attempting to teach Skills without Knowledge results in superficial engagement, while teaching Knowledge without Skills reduces the discipline to rote memorization.</p>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                         <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-3 text-lg"><i class="fa-solid fa-brain text-orange-500"></i> Knowledge (K)</h4>
                         <p class="text-sm text-slate-600 mb-4 flex-grow">The objective raw material. Specific historical data points, facts, and contexts (e.g., 72 resolutions, 1876 Indian Act, National Policy). Well-sequenced factual knowledge is the essential prerequisite for critical thinking.</p>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-100 mt-auto">
-                            <p class="text-xs text-slate-700 font-medium"><strong>Purpose:</strong> Populates the student's schema. Provides the factual foundation necessary to question assumptions and detect bias.</p>
-                        </div>
                     </div>
                     
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                         <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-3 text-lg"><i class="fa-solid fa-lightbulb text-amber-500"></i> Understanding (U)</h4>
                         <p class="text-sm text-slate-600 mb-4 flex-grow">The architecture built from material. The cognitive process of putting pieces of knowledge into a logical and meaningful order (e.g., "The evolution of sovereignty in Canada was gradual").</p>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-100 mt-auto">
-                            <p class="text-xs text-slate-700 font-medium"><strong>Purpose:</strong> Facilitates cognitive transfer. Bridges the gap between historical fact and contemporary reality, ensuring history is viewed as interconnected concepts.</p>
-                        </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                         <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-3 text-lg"><i class="fa-solid fa-pen-ruler text-red-500"></i> Skills & Procedures (SP)</h4>
                         <p class="text-sm text-slate-600 mb-4 flex-grow">The active dimension. What students <em>do</em> to demonstrate their acquired Knowledge and Understanding. Integrates competencies using specific verbs (e.g., Analyze, Investigate, Justify).</p>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-100 mt-auto">
-                            <p class="text-xs text-slate-700 font-medium"><strong>Purpose:</strong> Measurement and application. Provides the tangible behaviors and artifacts that allow educators to observe and assess invisible cognitive structures.</p>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Tab 2: Sequencing Options -->
-        <section id="sequencing" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
+        <!-- Tab 2: Sequencing Overview -->
+        <section id="sequencing-overview" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
             <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-900 mb-3">Examples of Unit Sequencing</h2>
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-5 mb-6 rounded-r-xl shadow-sm flex gap-4 items-start">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3">Unit Sequencing Examples | Overview</h2>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-5 mb-8 rounded-r-xl shadow-sm flex gap-4 items-start">
                     <i class="fa-solid fa-circle-info text-blue-600 text-xl mt-0.5"></i>
                     <div>
-                        <h4 class="font-bold text-blue-900 mb-1">Professional Autonomy</h4>
+                        <h4 class="font-bold text-blue-900 mb-1">Professional Autonomy & Curriculum Design</h4>
+                        <p class="text-sm text-blue-800 leading-relaxed mb-3">
+                            The order in which Organizing Ideas, Learning Outcomes, and KUSPs are presented in the provincial curriculum document does not mandate a chronological order for teaching. Curriculum designers and teachers possess the professional autonomy to reorder, cluster, and merge these components. 
+                        </p>
                         <p class="text-sm text-blue-800 leading-relaxed">
-                            The order in which Organizing Ideas, Learning Outcomes, and KUSPs are presented in the provincial curriculum document does not mandate a chronological order for teaching. Curriculum designers and teachers possess the professional autonomy to reorder, cluster, and merge these components. Below are three distinct examples.
+                            As stated in the Guiding Framework: <em>"The curriculum sets out the content of what students are to be taught; it does not dictate how to teach... Teachers need the flexibility to do what works best for their students in a variety of contexts."</em>
                         </p>
                     </div>
                 </div>
+
+                <p class="text-slate-600 text-lg mb-8">Select one of the three sequencing paradigms below to explore detailed breakdowns, interactive examples, and assessment considerations.</p>
+
+                <!-- Navigation Cards to Sub-Pages -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <button onclick="document.querySelector('[data-target=\'seq-chrono\']').click()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-400 transition-all text-left group">
+                        <div class="bg-blue-100 w-14 h-14 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-timeline text-2xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">1. Chronological</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Sequence the curriculum based on a linear, historical timeline, moving from immediate pre-Confederation through to modern contemporary rights.</p>
+                    </button>
+
+                    <button onclick="document.querySelector('[data-target=\'seq-thematic\']').click()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-400 transition-all text-left group">
+                        <div class="bg-emerald-100 w-14 h-14 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-object-group text-2xl text-emerald-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">2. Thematic Clustering</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Abandon strict chronology in favor of deeply conceptual units, merging outcomes based on thematic similarities (e.g., Governance, Economics).</p>
+                    </button>
+
+                    <button onclick="document.querySelector('[data-target=\'seq-inquiry\']').click()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-400 transition-all text-left group">
+                        <div class="bg-purple-100 w-14 h-14 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-magnifying-glass text-2xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-purple-600 transition-colors">3. Inquiry Modules</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Organize the curriculum around massive, overarching inquiries, focusing intensely on Skills & Procedures to answer broad philosophical questions.</p>
+                    </button>
+                </div>
+            </header>
+        </section>
+
+        <!-- Sub Page: Chronological -->
+        <section id="seq-chrono" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
+            <header class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <button class="text-slate-400 hover:text-blue-600 transition-colors" onclick="document.querySelector('[data-target=\'sequencing-overview\']').click()"><i class="fa-solid fa-arrow-left"></i> Back to Overview</button>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 flex items-center gap-3"><i class="fa-solid fa-timeline text-blue-600"></i> Option 1: Chronological Progression</h2>
+                <p class="text-slate-600 max-w-4xl leading-relaxed mb-6">This approach groups KUSPs logically along a timeline. It adheres strongly to the Guiding Framework's principle that <em>"a good curriculum must provide knowledge as a foundation for critical thinking, be logically organized and sequenced."</em> It minimizes cognitive dissonance by presenting history as a chain of cause and effect.</p>
+
+                <!-- Pros / Cons & Assessment -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-800 mb-4 border-b pb-2">Analysis & Considerations</h4>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li><strong class="text-emerald-600"><i class="fa-solid fa-check mr-1"></i> Pro:</strong> Events build linearly. The Northwest Resistance makes immediate sense when taught directly alongside the acquisition of Rupert's Land and the CPR.</li>
+                            <li><strong class="text-orange-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Con:</strong> Modern concepts (e.g., Charter of Rights, Section 28, Multiculturalism) are clustered at the very end of the year. If pacing lags, these critical citizenship outcomes may be rushed.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800 text-white border border-slate-700 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-100 mb-4 border-b border-slate-600 pb-2"><i class="fa-solid fa-scale-balanced text-blue-400 mr-2"></i> Assessment Strategy</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed mb-3">Assessments must decouple the chronological era from the specific Learning Outcome being reported.</p>
+                        <p class="text-sm text-slate-300 leading-relaxed">For instance, a single historical test on the 1870s must be designed to yield separate grades for <em>LO1 (Expansion)</em>, <em>LO3 (Economy - National Policy)</em>, and <em>LO2 (Armed Forces - NWMP)</em>.</p>
+                    </div>
+                </div>
             </header>
 
-            <!-- Sub-tabs for Options -->
-            <div class="flex flex-wrap border-b border-slate-200 mb-6 gap-2">
-                <button class="sub-tab-btn active px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="seq" data-subtab="seq-opt1">Example 1: Chronological</button>
-                <button class="sub-tab-btn px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="seq" data-subtab="seq-opt2">Example 2: Thematic Clustering</button>
-                <button class="sub-tab-btn px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="seq" data-subtab="seq-opt3">Example 3: Inquiry Modules</button>
-            </div>
+            <!-- Interactive Timeline -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-8 text-center">Interactive Chronological KUSP Map</h3>
+                <p class="text-sm text-slate-500 text-center mb-8 italic">Click each era to expand the specific factual knowledge (K), Understanding (U), and Skills (S) drawn from the Grade 7 curriculum.</p>
 
-            <!-- Example 1: Chronological -->
-            <div id="seq-opt1" class="sub-tab-content active w-full" data-subtab-group="seq">
-                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-3">The Chronological Progression</h3>
-                    <p class="text-slate-600 text-sm mb-6 leading-relaxed">This option sequences the curriculum based on a linear, historical timeline. It groups KUSPs chronologically, moving from the immediate pre-Confederation era through to the complexities of modern contemporary rights. Economic strategies and law enforcement are taught concurrently with territorial expansion.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 border-t border-slate-100 pt-6">
-                        <div>
-                            <h4 class="font-bold text-emerald-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros of the Approach</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>Cognitive Scaffolding:</strong> Minimizes cognitive dissonance as events build upon each other linearly, demonstrating clear cause-and-effect relationships.</li>
-                                <li><strong>Contextual Clarity:</strong> The creation of the NWMP or the Northwest Resistance makes immediate sense when taught directly alongside the acquisition of Rupert's Land and the CPR.</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-lightbulb mr-2"></i>Considerations</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>Late Introduction of Citizenship:</strong> Critical discussions regarding modern rights, the Charter, and systemic discrimination are pushed to the end. If pacing falls behind, these vital concepts risk superficial coverage.</li>
-                                <li><strong>Teacher Pacing:</strong> The history of western expansion contains a massive volume of Knowledge. Teachers should employ "flash-forwards" to connect past legislation to present-day realities early on.</li>
-                            </ul>
+                <div class="timeline-container space-y-8">
+                    <!-- Era 1 -->
+                    <div class="relative">
+                        <div class="timeline-node" style="border-color: #e2e8f0; background-color: #3b82f6;"></div>
+                        <div class="ml-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden transition-all duration-300">
+                            <button class="accordion-button w-full p-4 text-left flex justify-between items-center hover:bg-slate-100" onclick="toggleAccordion(this)">
+                                <div>
+                                    <span class="text-blue-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 1 | 1860s - 1870s</span>
+                                    <span class="font-bold text-slate-800 text-lg">Foundations of Confederation & Early Expansion</span>
+                                </div>
+                                <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            </button>
+                            <div class="accordion-content border-t border-slate-200 p-5 bg-white">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Primary LO Alignment</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li><strong>LO4:</strong> Relates legislation to the evolution of sovereignty</li>
+                                            <li><strong>LO1:</strong> Examines post-Confederation expansion</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Core Knowledge (Facts)</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li>Evolution of political boundaries (New France to BNA)</li>
+                                            <li>Fathers of Confederation & 72 Resolutions</li>
+                                            <li>BNA Act (1867) & Federalism structure</li>
+                                            <li>Acquisition of Rupert's Land & North-Western Territory</li>
+                                            <li>Louis Riel & the Red River provisional government (1869)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="space-y-4">
-                    <!-- Unit 1 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-blue-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 1</span>
-                                <span class="font-bold text-slate-800 text-lg">The Foundations of Confederation</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time and Place (Examine expansion) & Systems (Relate legislation to sovereignty)</p>
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                <h5 class="text-sm font-bold text-blue-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Evolution of political boundaries (New France to BNA), the Quebec Conference and 72 resolutions, the British North America Act (1867), the establishment of federalism, representative and responsible government, and the roles of the Fathers of Confederation.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Unit 2 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-emerald-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 2</span>
-                                <span class="font-bold text-slate-800 text-lg">Western Expansion and its Impacts</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time/Place (Expansion, Armed Forces) & Systems (Gov role in economy)</p>
-                            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-                                <h5 class="text-sm font-bold text-emerald-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Acquisition of Rupert's Land, the Red River provisional government (1869), Louis Riel, the system of scrip, Northwest Resistance (1885), 11 numbered treaties, Indian Act (1876), NWMP establishment (1873), CPR completion, and western settlement demographics.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Unit 3 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 3</span>
-                                <span class="font-bold text-slate-800 text-lg">A Maturing Nation: Economy & Conflict</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Systems (Economy, Legislation) & Time/Place (Armed Forces)</p>
-                            <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                                <h5 class="text-sm font-bold text-orange-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Sir John A. Macdonald's National Policy, tariffs versus free trade, Gross Domestic Product (GDP), regional economies, the Boer War, First World War contributions (Vimy Ridge, diverse battalions), Statute of Westminster (1931), Bank of Canada creation.</p>
+                    <!-- Era 2 -->
+                    <div class="relative">
+                        <div class="timeline-node" style="border-color: #e2e8f0; background-color: #10b981;"></div>
+                        <div class="ml-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden transition-all duration-300">
+                            <button class="accordion-button w-full p-4 text-left flex justify-between items-center hover:bg-slate-100" onclick="toggleAccordion(this)">
+                                <div>
+                                    <span class="text-emerald-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 2 | 1870s - 1905</span>
+                                    <span class="font-bold text-slate-800 text-lg">Western Settlement & Nation Building</span>
+                                </div>
+                                <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            </button>
+                            <div class="accordion-content border-t border-slate-200 p-5 bg-white">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Primary LO Alignment</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li><strong>LO3:</strong> Government's role in developing the economy</li>
+                                            <li><strong>LO2:</strong> Development of Armed Forces</li>
+                                            <li><strong>LO5:</strong> Examines evolving rights (Early discrimination)</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Core Knowledge (Facts)</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li>System of scrip (1870) & 11 Numbered Treaties (1871-1921)</li>
+                                            <li>Indian Act (1876)</li>
+                                            <li>Establishment of the NWMP (1873)</li>
+                                            <li>Macdonald's National Policy & Tariffs</li>
+                                            <li>Completion of the CPR & Diverse Immigration demographics</li>
+                                            <li>Northwest Resistance (1885)</li>
+                                            <li>Alberta and Saskatchewan enter Confederation (1905)</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Unit 4 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-purple-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 4</span>
-                                <span class="font-bold text-slate-800 text-lg">The Evolution of Citizenship and Rights</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Citizenship (Evolving rights) & Systems (Legislation)</p>
-                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                                <h5 class="text-sm font-bold text-purple-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Past discriminatory legislation (Chinese Head Tax, etc.), Famous Five and Indigenous Famous Five advocacy, Canadian Constitution (1982), Charter of Rights and Freedoms (Section 28), modern multiculturalism, and government reparations.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Option 2: Thematic Clustering -->
-            <div id="seq-opt2" class="sub-tab-content w-full" data-subtab-group="seq">
-                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-3">Thematic Clustering by Systems and Societies</h3>
-                    <p class="text-slate-600 text-sm mb-6 leading-relaxed">This option abandons strict chronology in favor of deeply thematic, conceptual units. It merges outcomes across different Organizing Ideas based on thematic similarities, creating highly focused investigations into specific domains. This approach requires students to look at a single societal concept and trace its evolution backward and forward through time.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 border-t border-slate-100 pt-6">
-                        <div>
-                            <h4 class="font-bold text-emerald-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros of the Approach</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>Deep Conceptual Understanding:</strong> Students develop robust understanding of overarching systems. Studying all economic factors (CPR, National Policy, GDP) in one concentrated unit helps achieve the "Understanding" that economies change over time.</li>
-                                <li><strong>Immediate Relevance:</strong> Allows teachers to instantly connect historical events (1867) to current events (1982 Charter) seamlessly.</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-lightbulb mr-2"></i>Considerations</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>Temporal Disorientation:</strong> Bouncing from 1867 to 1982, back to 1870, can be jarring. Teachers must provide persistent, visual timeline tools in the classroom.</li>
-                                <li><strong>Complexity in Assessment:</strong> Formative assessments must carefully disentangle whether confusion stems from a lack of thematic understanding or a simple chronological misunderstanding.</li>
-                            </ul>
+                    <!-- Era 3 -->
+                    <div class="relative">
+                        <div class="timeline-node" style="border-color: #e2e8f0; background-color: #f59e0b;"></div>
+                        <div class="ml-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden transition-all duration-300">
+                            <button class="accordion-button w-full p-4 text-left flex justify-between items-center hover:bg-slate-100" onclick="toggleAccordion(this)">
+                                <div>
+                                    <span class="text-amber-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 3 | 1899 - 1930s</span>
+                                    <span class="font-bold text-slate-800 text-lg">Global Conflict & Economic Maturation</span>
+                                </div>
+                                <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            </button>
+                            <div class="accordion-content border-t border-slate-200 p-5 bg-white">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Primary LO Alignment</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li><strong>LO2:</strong> Development of Armed Forces</li>
+                                            <li><strong>LO3:</strong> Government's role in developing the economy</li>
+                                            <li><strong>LO4:</strong> Relates legislation to sovereignty</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Core Knowledge (Facts)</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li>Boer War (1899-1902)</li>
+                                            <li>First World War (CEF, Vimy Ridge, Beaumont-Hamel, Ypres)</li>
+                                            <li>Contributions of diverse battalions (e.g., No. 2 Construction, Sikh, Indigenous)</li>
+                                            <li>Statute of Westminster (1931)</li>
+                                            <li>Creation of the Bank of Canada (1930s) & GDP concepts</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="space-y-4">
-                    <!-- Unit 1 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-blue-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 1</span>
-                                <span class="font-bold text-slate-800 text-lg">The Architecture of Governance</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Systems (Legislation) & Citizenship (Evolving rights)</p>
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                <h5 class="text-sm font-bold text-blue-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">BNA Act (1867), federalism, representative government, the Canadian Constitution (1982), the Charter of Rights and Freedoms, the Famous Five advocacy, and the evolution of equality rights.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Unit 2 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-emerald-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 2</span>
-                                <span class="font-bold text-slate-800 text-lg">The Economics of Nation-Building</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Systems (Economy) & Time/Place (Expansion)</p>
-                            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-                                <h5 class="text-sm font-bold text-emerald-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">The National Policy, tariffs vs. free trade, GDP, taxation/equalization payments, natural resources, the Bank of Canada, the building of the CPR, and the economic motivations for western expansion.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Unit 3 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 3</span>
-                                <span class="font-bold text-slate-800 text-lg">Conflict, Land, and Legacy</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time/Place (Expansion) & Citizenship (Evolving rights)</p>
-                            <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                                <h5 class="text-sm font-bold text-orange-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Acquisition of Rupert's Land, Red River, Northwest Resistance, numbered treaties, the Indian Act, legacy of scrip, discriminatory immigration policies (Chinese Head Tax), and the systemic impact on First Nations and Métis.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Unit 4 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
-                            <div>
-                                <span class="text-purple-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 4</span>
-                                <span class="font-bold text-slate-800 text-lg">Peace, Security, and Global Identity</span>
-                            </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time/Place (Armed forces) & Systems (Legislation)</p>
-                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                                <h5 class="text-sm font-bold text-purple-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">NWMP to RCMP evolution, the Militia Acts, the Boer War, WW1 contributions and battlefields, diverse war efforts (No. 2 Construction Battalion), the Statute of Westminster, and the evolution of Canada's global military identity.</p>
+                    <!-- Era 4 -->
+                    <div class="relative">
+                        <div class="timeline-node" style="border-color: #e2e8f0; background-color: #8b5cf6;"></div>
+                        <div class="ml-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden transition-all duration-300">
+                            <button class="accordion-button w-full p-4 text-left flex justify-between items-center hover:bg-slate-100" onclick="toggleAccordion(this)">
+                                <div>
+                                    <span class="text-purple-600 font-bold text-xs uppercase tracking-wider block mb-1">Unit 4 | 1920s - Present</span>
+                                    <span class="font-bold text-slate-800 text-lg">The Evolution of Citizenship and Rights</span>
+                                </div>
+                                <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            </button>
+                            <div class="accordion-content border-t border-slate-200 p-5 bg-white">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Primary LO Alignment</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li><strong>LO5:</strong> Examines evolving rights and discrimination</li>
+                                            <li><strong>LO4:</strong> Relates legislation to sovereignty</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-slate-800 mb-2 border-b pb-1">Core Knowledge (Facts)</h5>
+                                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                            <li>Advocacy of the Famous Five & Indigenous Famous Five</li>
+                                            <li>Canadian Constitution (1982) & The Charter of Rights and Freedoms</li>
+                                            <li>Section 28 (Gender equality)</li>
+                                            <li>Government apologies and reparations</li>
+                                            <li>Modern multiculturalism and pluralism</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Option 3: Inquiry Modules -->
-            <div id="seq-opt3" class="sub-tab-content w-full" data-subtab-group="seq">
-                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-3">Inquiry-Driven Conceptual Modules</h3>
-                    <p class="text-slate-600 text-sm mb-6 leading-relaxed">This option organizes the curriculum around massive, overarching inquiries. It focuses intensely on the Skills and Procedures, using the Knowledge components as mandatory case studies to answer broad philosophical questions about the nature of a country. This aligns with the curriculum’s mandate to combine social science methods, research, source evaluation, and evidence interpretation.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 border-t border-slate-100 pt-6">
-                        <div>
-                            <h4 class="font-bold text-emerald-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros of the Approach</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>High Engagement:</strong> Framing units as profound mysteries or debates (e.g., "Who belongs?") increases student buy-in and aligns directly with the development of core competencies.</li>
-                                <li><strong>Skill Mastery:</strong> Naturally prioritizes analyzing and synthesizing, as students must actively use evidence to answer the module's core question rather than passively receiving lectures.</li>
-                            </ul>
+        <!-- Sub Page: Thematic -->
+        <section id="seq-thematic" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
+            <header class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <button class="text-slate-400 hover:text-emerald-600 transition-colors" onclick="document.querySelector('[data-target=\'sequencing-overview\']').click()"><i class="fa-solid fa-arrow-left"></i> Back to Overview</button>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 flex items-center gap-3"><i class="fa-solid fa-object-group text-emerald-600"></i> Option 2: Thematic Clustering</h2>
+                <p class="text-slate-600 max-w-4xl leading-relaxed mb-6">This approach merges outcomes across different Organizing Ideas based on thematic similarities, creating highly focused investigations into specific domains. This requires students to look at a single societal concept (e.g. The Economy) and trace its evolution backward and forward through time.</p>
+
+                <!-- Pros / Cons & Assessment -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-800 mb-4 border-b pb-2">Analysis & Considerations</h4>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li><strong class="text-emerald-600"><i class="fa-solid fa-check mr-1"></i> Pro:</strong> Deep Conceptual Understanding. Studying all economic factors (CPR, National Policy, GDP, Bank of Canada) in one concentrated unit helps achieve the "Understanding" that economies change over time.</li>
+                            <li><strong class="text-orange-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Con:</strong> Temporal Disorientation. Bouncing from 1867 to 1982, back to 1870 within a single unit can be jarring without persistent visual timeline tools in the classroom.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800 text-white border border-slate-700 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-100 mb-4 border-b border-slate-600 pb-2"><i class="fa-solid fa-scale-balanced text-emerald-400 mr-2"></i> Assessment Strategy</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed mb-3">This sequencing aligns almost perfectly with the 5 Learning Outcomes of the curriculum, making grading highly straightforward.</p>
+                        <p class="text-sm text-slate-300 leading-relaxed">A teacher can effectively assess "LO3: The Economy" exclusively during the Economics unit, without having to extract economic questions from chronological tests.</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Interactive Drag and Drop Sorter -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Interactive Activity: Sort the Curriculum</h3>
+                        <p class="text-sm text-slate-500">Drag the factual Knowledge items from the bank into the correct Thematic Unit bucket.</p>
+                    </div>
+                    <button id="reset-dnd" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm font-medium transition-colors">Reset Activity</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Bank -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col h-full">
+                        <h4 class="font-bold text-slate-700 text-sm mb-3 uppercase tracking-wide text-center bg-white py-2 rounded shadow-sm">Curriculum Knowledge Bank</h4>
+                        <div id="item-bank" class="flex-1 space-y-2 min-h-[200px] p-2">
+                            <!-- Draggable Items -->
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-cpr" data-target="theme-econ">Completion of the CPR</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-bna" data-target="theme-gov">BNA Act (1867)</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-charter" data-target="theme-rights">Charter of Rights & Freedoms</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-nwmp" data-target="theme-sec">NWMP Establishment (1873)</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-bank" data-target="theme-econ">Creation of the Bank of Canada</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-ww1" data-target="theme-sec">First World War Battles (Vimy)</div>
+                            <div class="draggable bg-white border border-slate-300 p-3 rounded cursor-grab shadow-sm text-sm font-medium hover:border-blue-400" draggable="true" id="k-famous" data-target="theme-rights">Famous Five Advocacy</div>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-slate-700 text-sm mb-2 uppercase tracking-wider"><i class="fa-solid fa-lightbulb mr-2"></i>Considerations</h4>
-                            <ul class="text-sm text-slate-700 space-y-3">
-                                <li><strong>Tracking Challenges:</strong> Because KUSPs are dispersed widely based on inquiry needs rather than curricular order, ensuring every mandatory knowledge point is covered requires meticulous mapping.</li>
-                                <li><strong>Resource Intensive:</strong> Demands heavy curation of primary/secondary sources. Inquiry must be structured, guided, and deeply rooted in the mandatory historical facts to comply with the Guiding Framework.</li>
-                            </ul>
+                    </div>
+
+                    <!-- Dropzones -->
+                    <div class="col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="dropzone bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-4 flex flex-col min-h-[150px]" data-zone="theme-gov">
+                            <h4 class="font-bold text-blue-800 text-sm mb-2 text-center pointer-events-none"><i class="fa-solid fa-landmark mr-1"></i> The Architecture of Governance</h4>
+                            <div class="zone-items flex-1 space-y-2"></div>
+                        </div>
+                        <div class="dropzone bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-xl p-4 flex flex-col min-h-[150px]" data-zone="theme-econ">
+                            <h4 class="font-bold text-emerald-800 text-sm mb-2 text-center pointer-events-none"><i class="fa-solid fa-coins mr-1"></i> The Economics of Nation-Building</h4>
+                            <div class="zone-items flex-1 space-y-2"></div>
+                        </div>
+                        <div class="dropzone bg-orange-50 border-2 border-dashed border-orange-300 rounded-xl p-4 flex flex-col min-h-[150px]" data-zone="theme-sec">
+                            <h4 class="font-bold text-orange-800 text-sm mb-2 text-center pointer-events-none"><i class="fa-solid fa-shield-halved mr-1"></i> Peace, Security, and Identity</h4>
+                            <div class="zone-items flex-1 space-y-2"></div>
+                        </div>
+                        <div class="dropzone bg-purple-50 border-2 border-dashed border-purple-300 rounded-xl p-4 flex flex-col min-h-[150px]" data-zone="theme-rights">
+                            <h4 class="font-bold text-purple-800 text-sm mb-2 text-center pointer-events-none"><i class="fa-solid fa-scale-unbalanced mr-1"></i> Evolution of Citizenship & Rights</h4>
+                            <div class="zone-items flex-1 space-y-2"></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
+        </section>
+
+        <!-- Sub Page: Inquiry -->
+        <section id="seq-inquiry" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
+            <header class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <button class="text-slate-400 hover:text-purple-600 transition-colors" onclick="document.querySelector('[data-target=\'sequencing-overview\']').click()"><i class="fa-solid fa-arrow-left"></i> Back to Overview</button>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 flex items-center gap-3"><i class="fa-solid fa-magnifying-glass text-purple-600"></i> Option 3: Inquiry Modules</h2>
+                <p class="text-slate-600 max-w-4xl leading-relaxed mb-6">This option organizes the curriculum around massive, overarching inquiries directly pulled from the curriculum's mandated "Guiding Questions." It focuses intensely on the development of Core Competencies (Critical Thinking, Research, Communication), using the Knowledge components as required case studies to answer broad philosophical questions about the nature of a country.</p>
+
+                <!-- Pros / Cons & Assessment -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-800 mb-4 border-b pb-2">Analysis & Considerations</h4>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li><strong class="text-emerald-600"><i class="fa-solid fa-check mr-1"></i> Pro:</strong> High Engagement. Framing units as profound mysteries or debates increases student buy-in and aligns directly with the development of core competencies.</li>
+                            <li><strong class="text-orange-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Con:</strong> Resource Intensive. Demands heavy curation of primary/secondary sources. Inquiry must be deeply rooted in mandatory historical facts to comply with the Guiding Framework's mandate for "Objectivity and Impartiality."</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800 text-white border border-slate-700 rounded-xl p-6 shadow-sm">
+                        <h4 class="font-bold text-slate-100 mb-4 border-b border-slate-600 pb-2"><i class="fa-solid fa-scale-balanced text-purple-400 mr-2"></i> Assessment Strategy</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed mb-3">Assessment shifts from purely summative factual tests to rigorous performance tasks that assess <strong>Skills & Procedures</strong>.</p>
+                        <p class="text-sm text-slate-300 leading-relaxed">Evaluation focuses on how well a student can <em>"evaluate, use, and record information ethically from a variety of sources"</em> and <em>"communicate persuasively, using facts and evidence to support their position"</em> (Guiding Framework).</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Inquiry Accordions -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Inquiry Module Frameworks</h3>
+                
                 <div class="space-y-4">
                     <!-- Module 1 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
+                    <div class="border border-indigo-200 rounded-xl overflow-hidden shadow-sm">
+                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-indigo-50 hover:bg-indigo-100 transition-colors" onclick="toggleAccordion(this)">
                             <div>
-                                <span class="text-indigo-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 1</span>
-                                <span class="font-bold text-slate-800 text-lg italic">What defines the borders and demographics of a nation?</span>
+                                <span class="text-indigo-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 1 (Guiding Question 1)</span>
+                                <span class="font-bold text-slate-800 text-lg italic">"How has Canada changed since Confederation?"</span>
                             </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            <i class="icon fa-solid fa-chevron-down text-indigo-400 transition-transform"></i>
                         </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time/Place (Examine expansion) & Systems (Relate legislation to sovereignty)</p>
-                            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                                <h5 class="text-sm font-bold text-indigo-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Evolution of political boundaries, negotiations for Confederation, entry of new provinces and territories (Manitoba to Nunavut), push/pull immigration factors, and western settlement demographic patterns.</p>
+                        <div class="accordion-content bg-white p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="text-sm font-bold text-indigo-900 mb-3 bg-indigo-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-database mr-2"></i>Required Knowledge Case Studies</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                                        <li>Evolution of political boundaries (Manitoba to Nunavut)</li>
+                                        <li>Negotiations for Confederation (Charlottetown, Quebec, London)</li>
+                                        <li>Acquisition of Rupert's Land & Red River Resistance (1869)</li>
+                                        <li>Western settlement demographics and motivations</li>
+                                    </ul>
+                                </div>
+                                <div class="border-l-2 border-indigo-100 pl-6">
+                                    <h5 class="text-sm font-bold text-indigo-900 mb-3 bg-indigo-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-pen-ruler mr-2"></i>Targeted Skills & Procedures</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2">
+                                        <li><strong>Explain</strong> the evolution of political boundaries before and after Confederation.</li>
+                                        <li><strong>Analyze</strong> motivations that drove western expansion.</li>
+                                        <li><strong>Compare</strong> benefits gained to challenges lost in the acquisition of Rupert's Land.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                     <!-- Module 2 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
+                    <div class="border border-emerald-200 rounded-xl overflow-hidden shadow-sm">
+                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-emerald-50 hover:bg-emerald-100 transition-colors" onclick="toggleAccordion(this)">
                             <div>
-                                <span class="text-emerald-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 2</span>
-                                <span class="font-bold text-slate-800 text-lg italic">How is prosperity managed and distributed?</span>
+                                <span class="text-emerald-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 2 (Guiding Question 2)</span>
+                                <span class="font-bold text-slate-800 text-lg italic">"How can governments meet the economic needs of citizens?"</span>
                             </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            <i class="icon fa-solid fa-chevron-down text-emerald-400 transition-transform"></i>
                         </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Systems (Economy) & Time/Place (Expansion)</p>
-                            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-                                <h5 class="text-sm font-bold text-emerald-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">The National Policy, creation of the Bank of Canada, GDP, regional economies, taxation/equalization, natural resources (wheat, oil), and the underlying economic drive behind the CPR and the numbered treaties.</p>
+                        <div class="accordion-content bg-white p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="text-sm font-bold text-emerald-900 mb-3 bg-emerald-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-database mr-2"></i>Required Knowledge Case Studies</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                                        <li>Sir John A. Macdonald's National Policy (Tariffs)</li>
+                                        <li>Gross Domestic Product (GDP) and Banking (Bank of Canada)</li>
+                                        <li>Taxation and equalization payments</li>
+                                        <li>Extraction and manufacturing of natural resources</li>
+                                    </ul>
+                                </div>
+                                <div class="border-l-2 border-emerald-100 pl-6">
+                                    <h5 class="text-sm font-bold text-emerald-900 mb-3 bg-emerald-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-pen-ruler mr-2"></i>Targeted Skills & Procedures</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2">
+                                        <li><strong>Investigate</strong> the short-term and long-term consequences of the National Policy.</li>
+                                        <li><strong>Compare</strong> the opportunities and challenges of tariffs vs. free trade.</li>
+                                        <li><strong>Justify</strong> the use of taxation and equalization payments.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                     <!-- Module 3 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
+                    <div class="border border-orange-200 rounded-xl overflow-hidden shadow-sm">
+                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-orange-50 hover:bg-orange-100 transition-colors" onclick="toggleAccordion(this)">
                             <div>
-                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 3</span>
-                                <span class="font-bold text-slate-800 text-lg italic">How does a nation assert sovereignty and defend itself?</span>
+                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 3 (Guiding Question 3)</span>
+                                <span class="font-bold text-slate-800 text-lg italic">"How can defence of peace and security play a role in the development of a nation?"</span>
                             </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            <i class="icon fa-solid fa-chevron-down text-orange-400 transition-transform"></i>
                         </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Time/Place (Armed Forces) & Systems (Legislation)</p>
-                            <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                                <h5 class="text-sm font-bold text-orange-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">NWMP establishment, withdrawal of the British Army, the Boer War, WW1 battles (Ypres, Passchendaele, Gallipoli), the Statute of Westminster, and the transition from colonial dependency to independent foreign affairs.</p>
+                        <div class="accordion-content bg-white p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="text-sm font-bold text-orange-900 mb-3 bg-orange-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-database mr-2"></i>Required Knowledge Case Studies</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                                        <li>NWMP (1873) evolution to RCMP</li>
+                                        <li>Boer War (1899-1902) & First World War battles</li>
+                                        <li>Contributions of diverse communities (No. 2 Construction, Indigenous, Sikh)</li>
+                                        <li>Statute of Westminster (1931)</li>
+                                    </ul>
+                                </div>
+                                <div class="border-l-2 border-orange-100 pl-6">
+                                    <h5 class="text-sm font-bold text-orange-900 mb-3 bg-orange-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-pen-ruler mr-2"></i>Targeted Skills & Procedures</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2">
+                                        <li><strong>Examine</strong> the evolution of national police and military forces.</li>
+                                        <li><strong>Research</strong> stories about heroic and gallant acts carried out by Canadian military.</li>
+                                        <li><strong>Explain</strong> the role of the Statute of Westminster in Canada's sovereignty.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                     <!-- Module 4 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors" onclick="toggleAccordion(this)">
+                    <div class="border border-purple-200 rounded-xl overflow-hidden shadow-sm">
+                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-purple-50 hover:bg-purple-100 transition-colors" onclick="toggleAccordion(this)">
                             <div>
-                                <span class="text-purple-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 4</span>
-                                <span class="font-bold text-slate-800 text-lg italic">Who belongs, and how do rights evolve?</span>
+                                <span class="text-purple-600 font-bold text-xs uppercase tracking-wider block mb-1">Module 4 (Guiding Question 4)</span>
+                                <span class="font-bold text-slate-800 text-lg italic">"How can the evolution of rights impact people in Canada?"</span>
                             </div>
-                            <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                            <i class="icon fa-solid fa-chevron-down text-purple-400 transition-transform"></i>
                         </button>
-                        <div class="accordion-content border-t border-slate-200 p-6">
-                            <p class="text-sm text-slate-700 mb-4"><strong>Alignment:</strong> Citizenship (Evolving rights) & Time/Place (Expansion)</p>
-                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                                <h5 class="text-sm font-bold text-purple-900 mb-2">Key KUSP Clusters Addressed:</h5>
-                                <p class="text-sm text-slate-700 leading-relaxed">Red River, Northwest Resistance, the Indian Act, discriminatory legislation, the advocacy of the Famous Five and the Indigenous Famous Five, the Charter of Rights and Freedoms, and modern reparations for past injustices.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tab 3: Grading & Reporting -->
-        <section id="reporting" class="tab-content p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <header class="mb-10">
-                <h2 class="text-3xl font-bold text-slate-900 mb-3">Reporting Category Schemes</h2>
-                <p class="text-slate-600 max-w-4xl leading-relaxed">The Guiding Framework notes that student achievement of learning outcomes must be formally assessed and reported, but the precise architecture of the report card stems is an area of professional and divisional autonomy. The following are three distinct examples.</p>
-                <div class="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
-                    <p class="text-sm text-blue-800">
-                        <strong><i class="fa-solid fa-scale-balanced mr-2"></i>Assessment Consideration:</strong> The volume of KUSPs varies significantly across LOs. For example, LO1 (Expansion) contains a higher volume of foundational historical facts compared to LO4 (Legislation). Divisions may consider these variations when determining category weightings in their gradebooks.
-                    </p>
-                </div>
-            </header>
-
-            <div class="space-y-8">
-                <!-- Scheme A -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-500"></div>
-                    <div class="pl-2">
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Scheme Example A: Organizing Ideas as Primary Categories</h3>
-                        <p class="text-sm text-slate-600 mb-6">The report card and the teacher's gradebook are structured strictly around the three foundational Organizing Ideas of the curriculum.</p>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm mb-3">Categories Used:</h4>
-                                <ul class="bg-slate-50 border border-slate-100 rounded-lg p-4 space-y-3 text-sm text-slate-700 font-medium">
-                                    <li><i class="fa-solid fa-cube text-blue-500 mr-2"></i> Time and Place</li>
-                                    <li><i class="fa-solid fa-cube text-blue-500 mr-2"></i> Systems</li>
-                                    <li><i class="fa-solid fa-cube text-blue-500 mr-2"></i> Citizenship</li>
-                                </ul>
-                            </div>
-                            <div class="space-y-4">
+                        <div class="accordion-content bg-white p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <h4 class="font-bold text-emerald-700 text-xs uppercase tracking-wide mb-1">Pros</h4>
-                                    <p class="text-sm text-slate-600"><strong>Simplicity and Longitudinal Consistency:</strong> Parents see the exact same three categories from Gr 7-9, allowing for a clear longitudinal view. Forces holistic evaluation of concepts.</p>
+                                    <h5 class="text-sm font-bold text-purple-900 mb-3 bg-purple-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-database mr-2"></i>Required Knowledge Case Studies</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                                        <li>Past discriminatory legislation (Chinese Head Tax)</li>
+                                        <li>Canadian Charter of Rights and Freedoms (Section 28)</li>
+                                        <li>Advocacy by Famous Five and Indigenous Famous Five</li>
+                                        <li>Government apologies and reparations</li>
+                                    </ul>
                                 </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wide mb-1">Considerations</h4>
-                                    <p class="text-sm text-slate-600"><strong>Lack of Granularity & Imbalance:</strong> May obscure specific struggles. "Time and Place" contains dense KUSPs compared to "Citizenship." Treating them as equal reporting categories requires careful weighting by the teacher. Relies heavily on narrative report card comments.</p>
+                                <div class="border-l-2 border-purple-100 pl-6">
+                                    <h5 class="text-sm font-bold text-purple-900 mb-3 bg-purple-50 py-1 px-3 rounded inline-block"><i class="fa-solid fa-pen-ruler mr-2"></i>Targeted Skills & Procedures</h5>
+                                    <ul class="text-sm text-slate-700 space-y-2">
+                                        <li><strong>Reflect</strong> on the long-term impact of discriminatory policies and practices.</li>
+                                        <li><strong>Compare</strong> the protection of equality rights in past legislation vs. the Charter.</li>
+                                        <li><strong>Explore</strong> stories of advocacy by individuals or groups.</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Scheme B -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-emerald-500"></div>
-                    <div class="pl-2">
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Scheme Example B: Learning Outcomes as Primary Categories</h3>
-                        <p class="text-sm text-slate-600 mb-6">Bypasses the broad Organizing Ideas and uses the exact five Learning Outcomes mandated for Grade 7. A highly granular, explicitly compliant approach.</p>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm mb-3">Categories Used:</h4>
-                                <ul class="bg-slate-50 border border-slate-100 rounded-lg p-4 space-y-2 text-xs text-slate-700 font-medium leading-relaxed">
-                                    <li>• Examines Post-Confederation Expansion of the Dominion of Canada</li>
-                                    <li class="border-t border-slate-200 pt-2">• Relates the Development of Armed Forces to Sovereignty</li>
-                                    <li class="border-t border-slate-200 pt-2">• Examines the Government's Role in Developing the Economy</li>
-                                    <li class="border-t border-slate-200 pt-2">• Relates Legislation to the Evolution of Sovereignty</li>
-                                    <li class="border-t border-slate-200 pt-2">• Examines Evolving Rights and Discrimination in Canada</li>
-                                </ul>
-                            </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <h4 class="font-bold text-emerald-700 text-xs uppercase tracking-wide mb-1">Pros</h4>
-                                    <p class="text-sm text-slate-600"><strong>High Precision:</strong> Communicates exact areas of strength and weakness directly aligned with provincial expectations. Makes backward design incredibly intuitive.</p>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wide mb-1">Considerations</h4>
-                                    <p class="text-sm text-slate-600"><strong>Parental Cognitive Load & Siloed Learning:</strong> Five lengthy, jargon-heavy categories may overwhelm parents. It may also encourage teaching outcomes in isolation. Teachers must ensure gradebook software allows for cross-tagging of assignments (e.g., a National Policy report hits both Expansion and Economy).</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Scheme C -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-purple-500"></div>
-                    <div class="pl-2">
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Scheme Example C: Custom Concept-Based Categories</h3>
-                        <p class="text-sm text-slate-600 mb-4">This option involves a school division creating bespoke reporting categories that synthesize multiple Learning Outcomes into broader, parent-friendly conceptual buckets. <em>(Strictly avoids skill-based reporting like "Map Skills").</em></p>
-                        <p class="text-sm text-slate-600 mb-6 font-medium border-l-2 border-purple-300 pl-3">Assuming that all teachers in a Division collaboratively create and use the same categories to ensure systemic consistency, here are three different ways a Division could formulate these custom buckets:</p>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm mb-3">Three Examples of Division-Wide Custom Groupings:</h4>
-                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-4 space-y-4">
-                                    <!-- Variation 1 -->
-                                    <div>
-                                        <p class="text-sm font-bold text-slate-800 mb-1">Variation 1: Thematic/Systems Synthesis</p>
-                                        <ul class="text-xs text-slate-600 space-y-1 pl-2 border-l-2 border-slate-200">
-                                            <li><strong>National Expansion and Demographics</strong> <span class="text-slate-400">(LO1)</span></li>
-                                            <li><strong>Governance, Law, and the Economy</strong> <span class="text-slate-400">(LO3, LO4)</span></li>
-                                            <li><strong>Civic Identity, Conflict, and Equity</strong> <span class="text-slate-400">(LO2, LO5)</span></li>
-                                        </ul>
-                                    </div>
-                                    <!-- Variation 2 -->
-                                    <div class="border-t border-slate-200 pt-3">
-                                        <p class="text-sm font-bold text-slate-800 mb-1">Variation 2: Chronological/Historical Mapping</p>
-                                        <ul class="text-xs text-slate-600 space-y-1 pl-2 border-l-2 border-slate-200">
-                                            <li><strong>Foundations of Confederation</strong> <span class="text-slate-400">(LO1, LO4)</span></li>
-                                            <li><strong>Western Expansion and Security</strong> <span class="text-slate-400">(LO1, LO2, LO3)</span></li>
-                                            <li><strong>Modern Canada and Rights</strong> <span class="text-slate-400">(LO5, LO3, LO4)</span></li>
-                                        </ul>
-                                    </div>
-                                    <!-- Variation 3 -->
-                                    <div class="border-t border-slate-200 pt-3">
-                                        <p class="text-sm font-bold text-slate-800 mb-1">Variation 3: Guiding Framework Alignment</p>
-                                        <ul class="text-xs text-slate-600 space-y-1 pl-2 border-l-2 border-slate-200">
-                                            <li><strong>Pluralism & Perspectives</strong> <span class="text-slate-400">(Parts of LO1, LO2, LO5)</span></li>
-                                            <li><strong>Institutions & Systems</strong> <span class="text-slate-400">(LO4, Part of LO2)</span></li>
-                                            <li><strong>Growth & Development</strong> <span class="text-slate-400">(Part of LO1, LO3)</span></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <h4 class="font-bold text-emerald-700 text-xs uppercase tracking-wide mb-1">Pros</h4>
-                                    <p class="text-sm text-slate-600"><strong>Enhanced Meaning-Making:</strong> Grouping Governance with Economy reinforces curricular understandings. It is worded to resonate with parents, providing a narrative arc to the report card.</p>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wide mb-1">Considerations</h4>
-                                    <p class="text-sm text-slate-600"><strong>Systemic Inconsistency:</strong> Requires high upfront collaborative planning among PLCs to map which KUSPs belong to which category. Teachers must shift their mindset to assess historical accuracy and critical analysis rather than creating skill-based categories. (Competency Progressions can be used for tracking skills separately).</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tab 4: Curricular Assessment & Transfer Goals -->
-        <section id="transfer" class="tab-content p-6 md:p-10 max-w-6xl mx-auto w-full">
-            <header class="mb-10">
-                <h2 class="text-3xl font-bold text-slate-900 mb-3">Curricular Assessment and Transfer Goals</h2>
-                <p class="text-slate-600 max-w-4xl leading-relaxed">To effectively operationalize the curriculum, teachers must assess how the components work together to identify vital concepts, track enduring themes, and leverage the precise verbs mandated. Transfer goals are then built from this synthesis to define what students will understand independently long after a unit is over.</p>
-            </header>
-
-            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Part A: Assessment of Curricular Components</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-network-wired text-blue-500"></i> Concepts & Themes</h4>
-                    <p class="text-sm text-slate-600 leading-relaxed">The curriculum is built upon a dense network of political, economic, and civic concepts. Overarching themes revolve around nation-building, the struggle for equity, and structural mechanisms of government. Concepts like <strong>sovereignty</strong>, <strong>federalism</strong>, <strong>discrimination</strong>, <strong>multiculturalism</strong>, and <strong>free trade</strong> weave throughout to build macro-understanding.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-hand-fist text-rose-500"></i> Ideas That Are Resisted</h4>
-                    <p class="text-sm text-slate-600 leading-relaxed">A critical motif is <strong>resistance</strong>. The curriculum explicitly requires examining historical resistance to dominant narratives: Métis resistance to expansion/assimilation (Red River, Indian Act), advocacy against discrimination (Famous Five, Asian/Black Canadians), and resistance to colonial dependency (WWI, Statute of Westminster).</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-500"></i> The Role of Verbs</h4>
-                    <p class="text-sm text-slate-600 leading-relaxed">The verbs chosen within the Skills and Procedures are the engine of the curriculum. Students are commanded to <strong>Analyze</strong>, <strong>Investigate</strong>, <strong>Compare</strong>, <strong>Justify</strong>, and <strong>Evaluate</strong>. These verbs mandate that classrooms move beyond rote memorization into active, critical analysis and evidence-based debate.</p>
-                </div>
-            </div>
-
-            <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Part B: Examples of Transfer Goals</h3>
-            <p class="text-sm text-slate-600 mb-6">Select a sequencing option below to view specific, context-aligned transfer goals for each unit. These goals represent the ultimate cognitive destination: what a student should understand and independently be able to do with their learning in novel situations.</p>
-            
-            <!-- Transfer Goal Toggles -->
-            <div class="flex flex-wrap border-b border-slate-200 mb-6 gap-2">
-                <button class="sub-tab-btn active px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="tg" data-subtab="tg-opt1">Option 1: Chronological</button>
-                <button class="sub-tab-btn px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="tg" data-subtab="tg-opt2">Option 2: Thematic Clustering</button>
-                <button class="sub-tab-btn px-4 py-3 text-center text-slate-600 hover:text-blue-600 transition-colors font-medium text-sm flex-1 sm:flex-none rounded-t-md" data-subtab-group="tg" data-subtab="tg-opt3">Option 3: Inquiry Modules</button>
-            </div>
-
-            <!-- TG Option 1 -->
-            <div id="tg-opt1" class="sub-tab-content active w-full space-y-3" data-subtab-group="tg">
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 1: The Foundations of Confederation</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand how foundational documents establish the rule of law and apply this to evaluate the structure of modern governments.</li>
-                            <li>Students will be able to analyze the compromises required to unify diverse political entities under a federalist system.</li>
-                            <li>Students will be able to connect historical motivations for political unity to contemporary discussions about national security and economic stability.</li>
-                            <li>Students will understand the distinction between representative and responsible government and be able to identify these features in current civic institutions.</li>
-                            <li>Students will be able to evaluate the perspectives of key historical figures during political negotiations and relate them to modern political advocacy.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 2: Western Expansion and its Impacts</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that territorial expansion often results in systemic consequences for Indigenous populations, and will be able to analyze these impacts critically.</li>
-                            <li>Students will be able to investigate the root causes of historical resistance movements and compare them to modern civic protests.</li>
-                            <li>Students will understand the purpose of treaties and be able to articulate their ongoing legal and cultural significance in Canada today.</li>
-                            <li>Students will be able to analyze how demographic shifts and immigration policies alter the cultural and economic landscape of a region over time.</li>
-                            <li>Students will be able to evaluate the legacy of the Indian Act and articulate how historical legislation continues to shape contemporary societal debates.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 3: A Maturing Nation: Economy & Conflict</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand the function of Gross Domestic Product (GDP) and be able to use it to analyze regional economic disparities.</li>
-                            <li>Students will be able to evaluate how government interventions, such as tariffs and national banks, protect or hinder domestic industries.</li>
-                            <li>Students will understand the relationship between a nation's military capacity and its global sovereignty, and be able to apply this to modern geopolitical events.</li>
-                            <li>Students will be able to synthesize historical evidence to honor and explain the diverse contributions of marginalized groups to national security.</li>
-                            <li>Students will be able to analyze the shift from colonial dependency to independent foreign policy in the context of global alliances.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 4: The Evolution of Citizenship and Rights</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that societal rights evolve through advocacy and resistance, and will be able to identify strategies used to combat discrimination.</li>
-                            <li>Students will be able to evaluate historical examples of institutional discrimination and articulate how past policies inform the need for modern human rights charters.</li>
-                            <li>Students will be able to apply the principles of the Canadian Charter of Rights and Freedoms to assess contemporary issues of equity and justice.</li>
-                            <li>Students will understand the purpose of government reparations and be able to discuss their role in national reconciliation.</li>
-                            <li>Students will be able to analyze the impact of civic advocacy groups (like the Famous Five) on the long-term democratic health of a nation.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TG Option 2 -->
-            <div id="tg-opt2" class="sub-tab-content w-full space-y-3" data-subtab-group="tg">
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 1: The Architecture of Governance</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that constitutions are living frameworks and be able to compare how foundational laws adapt over time to meet societal needs.</li>
-                            <li>Students will be able to evaluate the balance of power within a federalist system and analyze how this affects regional vs. national decision-making.</li>
-                            <li>Students will understand the evolution of equality rights and be able to advocate for civic inclusion using historical precedents.</li>
-                            <li>Students will be able to analyze the mechanisms of representative government to determine how citizens can effectively influence legislation.</li>
-                            <li>Students will understand the significance of repatriating a constitution and be able to articulate its impact on complete national sovereignty.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 2: The Economics of Nation-Building</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand the reciprocal relationship between banking, taxation, and government services, and be able to apply this to local economic policies.</li>
-                            <li>Students will be able to analyze the long-term economic consequences of national infrastructure projects (like the CPR) on diverse populations.</li>
-                            <li>Students will be able to evaluate the ethical and economic implications of natural resource extraction on regional prosperity.</li>
-                            <li>Students will understand the mechanisms of wealth redistribution (equalization) and be able to debate its role in maintaining national unity.</li>
-                            <li>Students will be able to compare the benefits and drawbacks of free trade versus protectionist tariffs in a globalized market.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 3: Conflict, Land, and Legacy</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand the connection between land acquisition and systemic conflict, and be able to analyze land claim disputes using historical evidence.</li>
-                            <li>Students will be able to evaluate the concept of "scrip" and the treaty process to determine their long-term effects on First Nations and Métis sovereignty.</li>
-                            <li>Students will understand how discriminatory immigration policies reflect societal biases and be able to analyze their ongoing generational impacts.</li>
-                            <li>Students will be able to investigate the motivations behind historical uprisings to better understand the limits of government authority.</li>
-                            <li>Students will be able to synthesize diverse perspectives to engage in informed dialogue about the legacy of colonialism in modern society.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Unit 4: Peace, Security, and Global Identity</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand the evolution of national law enforcement and be able to analyze its role in both maintaining peace and asserting territorial control.</li>
-                            <li>Students will be able to evaluate the transition of a nation's military from an auxiliary force to an independent global actor.</li>
-                            <li>Students will understand the human cost of global conflicts and be able to discuss appropriate ways to commemorate diverse military sacrifices.</li>
-                            <li>Students will be able to articulate how participation in international alliances shapes a nation's foreign policy and global identity.</li>
-                            <li>Students will be able to analyze historical legislation (like the Militia Acts) to understand how governments build capacity for national defense.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TG Option 3 -->
-            <div id="tg-opt3" class="sub-tab-content w-full space-y-3" data-subtab-group="tg">
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Module 1: What defines the borders and demographics of a nation?</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that borders are human constructs driven by political and economic motives, and be able to trace their evolution.</li>
-                            <li>Students will be able to analyze push and pull factors of migration to predict how demographics might shift in response to global events.</li>
-                            <li>Students will understand the concept of demographic displacement and be able to evaluate the impacts of settlement on indigenous populations.</li>
-                            <li>Students will be able to synthesize historical data to explain how the entry of new provinces changes the political balance of a nation.</li>
-                            <li>Students will be able to investigate the geopolitical fears that drive territorial expansion and unification.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Module 2: How is prosperity managed and distributed?</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that national prosperity requires complex management, and be able to analyze the role of central banks in stabilizing an economy.</li>
-                            <li>Students will be able to evaluate the competing interests of regional resource economies versus national economic policies.</li>
-                            <li>Students will understand the economic rationale behind early treaties and be able to critically examine the intersection of trade and land rights.</li>
-                            <li>Students will be able to assess the fairness and efficacy of national taxation systems in addressing regional inequalities.</li>
-                            <li>Students will be able to use economic indicators (like GDP) to construct evidence-based arguments about a nation's historical growth.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Module 3: How does a nation assert sovereignty and defend itself?</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand the difference between internal policing and external defense, and be able to trace their development in a growing nation.</li>
-                            <li>Students will be able to evaluate the role of the military in fostering a sense of independent national identity distinct from colonial roots.</li>
-                            <li>Students will understand the diplomatic and legal mechanisms required to achieve control over foreign affairs.</li>
-                            <li>Students will be able to analyze historical battles not just for their military tactics, but for their political significance to national sovereignty.</li>
-                            <li>Students will be able to critically assess how a nation balances the need for security with the rights of its citizens during times of conflict.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
-                    <button class="accordion-button w-full px-5 py-4 text-left flex justify-between items-center" onclick="toggleAccordion(this)">
-                        <span class="font-bold text-slate-800">Module 4: Who belongs, and how do rights evolve?</span>
-                        <i class="icon fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
-                    </button>
-                    <div class="accordion-content px-5 pb-4 border-t border-slate-100 bg-slate-50">
-                        <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-slate-700">
-                            <li>Students will understand that the definition of "citizenship" has historically excluded certain groups, and be able to analyze the policies that enforced this exclusion.</li>
-                            <li>Students will be able to evaluate the success of advocacy movements in expanding the legal definition of rights and belonging.</li>
-                            <li>Students will understand the purpose of constitutional rights protections and be able to apply them to defend against systemic discrimination.</li>
-                            <li>Students will be able to synthesize the narratives of diverse cultural groups to create a comprehensive understanding of pluralism.</li>
-                            <li>Students will be able to critically reflect on government apologies and reparations to determine their effectiveness in achieving genuine equity.</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </section>
@@ -850,56 +659,39 @@
         // Main Navigation Logic
         const navBtns = document.querySelectorAll('.nav-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const mainScroll = document.getElementById('main-scroll');
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 // Reset styles
                 navBtns.forEach(b => {
                     b.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
-                    b.classList.add('text-slate-300', 'hover:bg-slate-800');
+                    
+                    // Specific logic to handle active states based on nested/parent visually
+                    if (b.parentElement.classList.contains('pl-11')) {
+                        b.classList.add('text-slate-400', 'hover:bg-slate-800');
+                        b.classList.remove('bg-slate-800', 'text-white');
+                    } else {
+                        b.classList.add('text-slate-300', 'hover:bg-slate-800');
+                    }
                 });
                 tabContents.forEach(content => content.classList.remove('active'));
 
-                // Set active styles
-                btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
-                btn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                // Set active styles based on where the button lives
+                if (btn.parentElement.classList.contains('pl-11')) {
+                    btn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+                    btn.classList.add('bg-slate-800', 'text-white');
+                    // Ensure parent Overview doesn't look completely deactivated if desired, but here we just style the clicked one.
+                } else {
+                    btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+                    btn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                }
                 
                 const targetId = btn.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
-            });
-        });
-
-        // Sub-tabs Logic (handles both sequencing and transfer goal tabs independently)
-        const subTabBtns = document.querySelectorAll('.sub-tab-btn');
-        
-        subTabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const group = btn.getAttribute('data-subtab-group');
-                const siblings = document.querySelectorAll(`.sub-tab-btn[data-subtab-group="${group}"]`);
-                const contents = document.querySelectorAll(`.sub-tab-content[data-subtab-group="${group}"]`);
-
-                // Reset styles for siblings in the same group
-                siblings.forEach(b => {
-                    b.classList.remove('active');
-                    b.style.borderBottomColor = 'transparent';
-                    b.style.color = '#475569'; // slate-600
-                    b.style.backgroundColor = 'transparent';
-                });
                 
-                // Hide content siblings in the same group
-                contents.forEach(c => {
-                    c.classList.remove('active');
-                });
-
-                // Set active styles
-                btn.classList.add('active');
-                btn.style.borderBottomColor = '#2563eb';
-                btn.style.color = '#2563eb';
-                btn.style.backgroundColor = '#eff6ff';
-
-                // Show target content
-                const targetId = btn.getAttribute('data-subtab');
-                document.getElementById(targetId).classList.add('active');
+                // Scroll to top
+                mainScroll.scrollTo(0, 0);
             });
         });
 
@@ -913,6 +705,77 @@
                 content.style.maxHeight = content.scrollHeight + "px";
             }
         }
+
+        // Drag and Drop Logic (Thematic Map)
+        const draggables = document.querySelectorAll('.draggable');
+        const dropzones = document.querySelectorAll('.dropzone');
+        const itemBank = document.getElementById('item-bank');
+        const resetButton = document.getElementById('reset-dnd');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', (e) => {
+                draggable.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', draggable.id);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+                validateDrop(draggable);
+            });
+        });
+
+        dropzones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', e => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const id = e.dataTransfer.getData('text/plain');
+                const draggable = document.getElementById(id);
+                if (draggable) {
+                    const itemsContainer = zone.querySelector('.zone-items');
+                    itemsContainer.appendChild(draggable);
+                }
+            });
+        });
+
+        // Simple validation feedback for drag and drop
+        function validateDrop(item) {
+            const currentZone = item.closest('.dropzone');
+            if (!currentZone) {
+                // Return to bank styles
+                item.classList.remove('border-emerald-500', 'border-red-500', 'bg-emerald-50', 'bg-red-50');
+                return;
+            }
+
+            const targetTheme = item.getAttribute('data-target');
+            const zoneTheme = currentZone.getAttribute('data-zone');
+
+            item.classList.remove('border-slate-300', 'border-emerald-500', 'border-red-500', 'bg-emerald-50', 'bg-red-50');
+
+            if (targetTheme === zoneTheme) {
+                item.classList.add('border-emerald-500', 'bg-emerald-50');
+            } else {
+                item.classList.add('border-red-500', 'bg-red-50');
+            }
+        }
+
+        // Reset Drag and Drop
+        resetButton.addEventListener('click', () => {
+            draggables.forEach(item => {
+                item.classList.remove('border-emerald-500', 'border-red-500', 'bg-emerald-50', 'bg-red-50');
+                item.classList.add('border-slate-300');
+                itemBank.appendChild(item);
+            });
+        });
     </script>
 </body>
 </html>
